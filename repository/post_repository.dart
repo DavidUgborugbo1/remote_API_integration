@@ -1,26 +1,37 @@
 import 'dart:convert';
-import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:remote_demo/model/post.dart';
 import 'package:http/http.dart' as http;
+
 class PostRepository {
-  final String baseurl = "https://jsonplaceholder.typicode.com";
+  final String baseUrl = "https://jsonplaceholder.typicode.com";
 
   //fetching our posts//
-  Future<List<Post>> fetchPosts() async{
-    final response = await http.get(Uri.parse('$baseurl/posts'));
+  Future<List<Post>> fetchPosts() async {
+    final response = await http.get(Uri.parse('$baseUrl/posts'));
 
-    if (response.statusCode == 200){
+    if (response.statusCode == 200) {
       List<dynamic> body = jsonDecode(response.body);
       debugPrint(response.body);
       return body.map((dynamic item) => Post.fromJson(item)).toList();
-    } else{
-      throw Exception("Failed to Load posts");
+    } else {
+      throw Exception("Failed to load posts");
     }
   }
 
-  Future<Post> createPost(Post post) async{
-    
+  Future<Post> createPost(Post post) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/posts'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(post.toJson()),
+    );
+
+    if (response.statusCode == 201) {
+      return Post.fromJson(jsonDecode(response.body));
+    } else {
+      debugPrint(response.body);
+      throw Exception("Failed to create post");
+    }
   }
 }
